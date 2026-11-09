@@ -106,7 +106,11 @@ export default {
       },
       body: JSON.stringify({ event_type: 'compat-report', client_payload: report }),
     });
-    if (sent.status !== 204) return reply(502, { error: 'GitHub refused the report' });
+    if (sent.status !== 204) {
+      // Shown in `wrangler tail`; the app only hears the status.
+      console.log('GitHub ' + sent.status + ': ' + (await sent.text()).slice(0, 300));
+      return reply(502, { error: 'GitHub refused the report (' + sent.status + ')' });
+    }
 
     await env.KV.put(seenKey, '1', { expirationTtl: SEEN_FOR });
     await env.KV.put(dayKey, String(today + 1), { expirationTtl: 2 * 24 * 3600 });
