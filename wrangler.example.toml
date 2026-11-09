@@ -1,0 +1,28 @@
+# Copy to wrangler.toml and fill in. wrangler.toml is not committed, so the live limits stay private.
+name = "webos-compat"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Remembers which addresses (hashed) have reported each app version, and counts reports a day.
+# Create it with `npx wrangler kv namespace create KV` and put the id it prints here.
+[[kv_namespaces]]
+binding = "KV"
+id = "KV_NAMESPACE_ID"
+
+# Posts from one address. Counted by Cloudflare, with no KV reads or writes.
+[[ratelimits]]
+name = "RATE_LIMIT"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 1
+  period = 60
+
+[vars]
+# Accepted reports a day across everyone. Each costs 2 KV writes, and the free plan allows 1,000.
+DAILY_CAP = "10"
+
+# Secrets, set with `npx wrangler secret put NAME`, never written here:
+#   GITHUB_TOKEN  a fine-grained token for the app repositories, Contents: read and write
+#   SALT          any long random text, used to hash addresses
